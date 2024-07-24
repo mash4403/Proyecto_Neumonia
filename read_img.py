@@ -1,10 +1,10 @@
+import pydicom
+from PIL import Image
 import numpy as np
 import cv2
-from PIL import Image
-import pydicom as dicom
 
 def read_dicom_file(path):
-    img = dicom.read_file(path)
+    img = pydicom.dcmread(path, force=True)  # Forzar la lectura del archivo
     img_array = img.pixel_array
     img2show = Image.fromarray(img_array)
     img2 = img_array.astype(float)
@@ -12,3 +12,4 @@ def read_dicom_file(path):
     img2 = np.uint8(img2)
     img_RGB = cv2.cvtColor(img2, cv2.COLOR_GRAY2RGB)
     return img_RGB, img2show
+
