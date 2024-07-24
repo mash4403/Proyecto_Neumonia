@@ -1,0 +1,12 @@
+from tensorflow.keras.models import load_model
+import tensorflow as tf
+
+def inspect_model(model_path):
+    model = load_model(model_path, compile=False)  # Cargar sin compilar
+    model.summary()  # Mostrar un resumen de la estructura del modelo
+    for layer in model.layers:
+        print(f"Layer Name: {layer.name}, Layer Output Shape: {layer.output_shape}")
+
+if __name__ == "__main__":
+    model_path = '/Users/miguelangel/Documents/inteligencia artificial/REPOSITORIOS/Proyecto_Neumonia/conv_MLP_84.h5'
+    inspect_model(model_path)

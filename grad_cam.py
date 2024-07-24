@@ -1,7 +1,8 @@
 import numpy as np
-import cv2
 import tensorflow as tf
 from tensorflow.keras import backend as K
+import cv2
+from preprocess_img import preprocess
 
 def grad_cam(array, model):
     img = preprocess(array)
@@ -12,9 +13,11 @@ def grad_cam(array, model):
     grads = K.gradients(output, last_conv_layer.output)[0]
     pooled_grads = K.mean(grads, axis=(0, 1, 2))
     iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
-    pooled_grads_value, conv_layer_output_value = iterate(img)
-    for filters in range(64):
-        conv_layer_output_value[:, :, filters] *= pooled_grads_value[filters]
+    pooled_grads_value, conv_layer_output_value = iterate([img])
+    
+    for i in range(conv_layer_output_value.shape[-1]):
+        conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
+    
     heatmap = np.mean(conv_layer_output_value, axis=-1)
     heatmap = np.maximum(heatmap, 0)
     heatmap /= np.max(heatmap)
