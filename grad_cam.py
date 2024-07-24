@@ -1,3 +1,8 @@
+
+# Propósito: Implementa la técnica Grad-CAM para visualizar las regiones de las imágenes que influyen en las predicciones del modelo.
+#Contenido:
+# grad_cam(array, model): Genera un mapa de calor que destaca las regiones de la imagen que más influyen en la predicción del modelo.
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K

@@ -1,3 +1,5 @@
+# Propósito: Contiene la función para cargar el modelo entrenado desde un archivo .h5.
+
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 

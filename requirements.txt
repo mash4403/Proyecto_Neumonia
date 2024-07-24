@@ -1,3 +1,5 @@
+#Propósito: Lista las dependencias de Python necesarias para el proyecto
+
 pyautogui
 pillow
 tkcap

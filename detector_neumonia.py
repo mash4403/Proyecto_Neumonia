@@ -1,3 +1,8 @@
+# Propósito: Archivo principal que configura y ejecuta la aplicación de detección de neumonía.
+
+# Define la lógica de la interfaz gráfica usando tkinter.
+# Implementa funciones para leer archivos DICOM y JPG, preprocesar imágenes, cargar el modelo entrenado, hacer predicciones y generar mapas de calor.
+
 from tkinter import *
 from tkinter import ttk, font, filedialog
 from tkinter.messagebox import askokcancel, showinfo, WARNING

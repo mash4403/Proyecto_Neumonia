@@ -1,3 +1,7 @@
+# Propósito: Proporciona funciones para leer y preprocesar imágenes.
+# Contenido:
+ # read_dicom_file(path): Lee y preprocesa archivos DICOM.
+
 import pydicom
 from PIL import Image
 import numpy as np
