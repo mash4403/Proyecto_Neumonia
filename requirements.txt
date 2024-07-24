@@ -8,3 +8,4 @@ matplotlib
 pandas
 tensorflow
 python-xlib
+pytest
