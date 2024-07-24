@@ -6,6 +6,6 @@ img2pdf
 opencv_python
 matplotlib
 pandas
-tensorflow==2.15.0
+tensorflow==2.16.2
 python-xlib
 pytest
