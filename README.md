@@ -14,6 +14,8 @@ Aplicación de una técnica de explicación llamada Grad-CAM para resaltar con u
 
 ## Uso de la herramienta:
 
+
+
 A continuación le explicaremos cómo empezar a utilizarla.
 
 Requerimientos necesarios para el funcionamiento:
@@ -35,49 +37,73 @@ Requerimientos necesarios para el funcionamiento:
 
 Uso de la Interfaz Gráfica:
 
-- Ingrese la cédula del paciente en la caja de texto
-- Presione el botón 'Cargar Imagen', seleccione la imagen del explorador de archivos del computador (Imagenes de prueba en https://drive.google.com/drive/folders/1WOuL0wdVC6aojy8IfssHcqZ4Up14dy0g?usp=drive_link)
-- Presione el botón 'Predecir' y espere unos segundos hasta que observe los resultados
-- Presione el botón 'Guardar' para almacenar la información del paciente en un archivo excel con extensión .csv
-- Presione el botón 'PDF' para descargar un archivo PDF con la información desplegada en la interfaz
-- Presión el botón 'Borrar' si desea cargar una nueva imagen
+- Uso de la Interfaz Gráfica
+Ingrese la cédula del paciente en la caja de texto.
+Presione el botón 'Cargar Imagen', seleccione la imagen del explorador de archivos del computador (Imágenes de prueba en Google Drive).
+Presione el botón 'Predecir' y espere unos segundos hasta que observe los resultados.
+Presione el botón 'Guardar' para almacenar la información del paciente en un archivo Excel con extensión .csv.
+Presione el botón 'PDF' para descargar un archivo PDF con la información desplegada en la interfaz.
+Presione el botón 'Borrar' si desea cargar una nueva imagen.
 
 ---
 
 ## Arquitectura de archivos propuesta.
 
 ## detector_neumonia.py
-
-Contiene el diseño de la interfaz gráfica utilizando Tkinter.
-
-Los botones llaman métodos contenidos en otros scripts.
+Contiene el diseño de la interfaz gráfica utilizando Tkinter. Los botones llaman métodos contenidos en otros scripts.
 
 ## integrator.py
-
-Es un módulo que integra los demás scripts y retorna solamente lo necesario para ser visualizado en la interfaz gráfica.
-Retorna la clase, la probabilidad y una imagen el mapa de calor generado por Grad-CAM.
+Es un módulo que integra los demás scripts y retorna solamente lo necesario para ser visualizado en la interfaz gráfica. Retorna la clase, la probabilidad y una imagen del mapa de calor generado por Grad-CAM.
 
 ## read_img.py
-
 Script que lee la imagen en formato DICOM para visualizarla en la interfaz gráfica. Además, la convierte a arreglo para su preprocesamiento.
 
 ## preprocess_img.py
+Script que recibe el arreglo proveniente de read_img.py, realiza las siguientes modificaciones:
 
-Script que recibe el arreglo proveniento de read_img.py, realiza las siguientes modificaciones:
+Resize a 512x512
+Conversión a escala de grises
+Ecualización del histograma con CLAHE
+Normalización de la imagen entre 0 y 1
+Conversión del arreglo de imagen a formato de batch (tensor)
+load_model.py
+Script que lee el archivo binario del modelo de red neuronal convolucional previamente entrenado.
 
-- resize a 512x512
-- conversión a escala de grises
-- ecualización del histograma con CLAHE
-- normalización de la imagen entre 0 y 1
-- conversión del arreglo de imagen a formato de batch (tensor)
-
-## load_model.py
-
-Script que lee el archivo binario del modelo de red neuronal convolucional previamente entrenado llamado 'WilhemNet86.h5'.
-
-## grad_cam.py
-
+ #  grad_cam.py
 Script que recibe la imagen y la procesa, carga el modelo, obtiene la predicción y la capa convolucional de interés para obtener las características relevantes de la imagen.
+
+## test_modelo.py
+Script para realizar pruebas unitarias del modelo.
+
+## test_prediccion.py
+Script para realizar pruebas unitarias de las predicciones del modelo.
+
+#  Dockerfile
+Archivo de configuración para crear una imagen Docker de la aplicación.
+
+## app.py
+Archivo principal para correr la aplicación Flask en Docker.
+
+
+---
+### Uso de Docker
+Para construir y correr la imagen Docker, sigue estos pasos:
+
+Asegúrate de que Docker esté instalado y corriendo en tu máquina.
+
+Navega al directorio del proyecto.
+
+Construye la imagen Docker con el siguiente comando:
+
+sh
+Copiar código
+docker build -t proyecto_neumonia .
+Corre el contenedor Docker con el siguiente comando:
+
+sh
+Copiar código
+docker run -p 8080:8080 proyecto_neumonia
+La aplicación estará disponible en http://localhost:8080.
 
 ---
 
