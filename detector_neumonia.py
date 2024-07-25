@@ -3,24 +3,28 @@
 # Define la lógica de la interfaz gráfica usando tkinter.
 # Implementa funciones para leer archivos DICOM y JPG, preprocesar imágenes, cargar el modelo entrenado, hacer predicciones y generar mapas de calor.
 
-from tkinter import *
-from tkinter import ttk, font, filedialog
-from tkinter.messagebox import askokcancel, showinfo, WARNING
+
+import tkinter as tk
+from tkinter import ttk, font, filedialog, Text, StringVar
 from PIL import ImageTk, Image
-import csv
-import tkcap
-from integrator import predict
-from read_img import read_dicom_file
+import numpy as np
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import csv  # Importa el módulo csv
+from load_model import load_trained_model  # Importa la función load_trained_model
 
 class App:
     def __init__(self):
-        self.root = Tk()
+        self.root = tk.Tk()
         self.root.title("Herramienta para la detección rápida de neumonía")
+
+        # BOLD FONT
         fonti = font.Font(weight="bold")
+
         self.root.geometry("815x560")
         self.root.resizable(0, 0)
 
-        # Labels
+        # LABELS
         self.lab1 = ttk.Label(self.root, text="Imagen Radiográfica", font=fonti)
         self.lab2 = ttk.Label(self.root, text="Imagen con Heatmap", font=fonti)
         self.lab3 = ttk.Label(self.root, text="Resultado:", font=fonti)
@@ -32,18 +36,20 @@ class App:
         )
         self.lab6 = ttk.Label(self.root, text="Probabilidad:", font=fonti)
 
-        # String Variables
+        # STRING VARIABLES
         self.ID = StringVar()
         self.result = StringVar()
 
-        # Input Boxes
+        # INPUT BOXES
         self.text1 = ttk.Entry(self.root, textvariable=self.ID, width=10)
+
+        # IMAGE BOXES
         self.text_img1 = Text(self.root, width=31, height=15)
         self.text_img2 = Text(self.root, width=31, height=15)
         self.text2 = Text(self.root)
         self.text3 = Text(self.root)
 
-        # Buttons
+        # BUTTONS
         self.button1 = ttk.Button(
             self.root, text="Predecir", state="disabled", command=self.run_model
         )
@@ -56,7 +62,7 @@ class App:
             self.root, text="Guardar", command=self.save_results_csv
         )
 
-        # Widget Positions
+        # WIDGETS POSITIONS
         self.lab1.place(x=110, y=65)
         self.lab2.place(x=545, y=65)
         self.lab3.place(x=500, y=350)
@@ -74,72 +80,76 @@ class App:
         self.text_img1.place(x=65, y=90)
         self.text_img2.place(x=500, y=90)
 
-        # Focus on Patient ID
+        # FOCUS ON PATIENT ID
         self.text1.focus_set()
 
-        # Recognize as class element
-        self.array = None
-        self.reportID = 0
+        # Load pre-trained model
+        self.model = load_trained_model()
+
         self.root.mainloop()
 
-    # Methods
     def load_img_file(self):
-        filepath = filedialog.askopenfilename(
-            initialdir="/",
-            title="Select image",
-            filetypes=(
-                ("DICOM", "*.dcm"),
-                ("JPEG", "*.jpeg"),
-                ("jpg files", "*.jpg"),
-                ("png files", "*.png"),
-            ),
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff")]
         )
-        if filepath:
-            self.array, img2show = read_dicom_file(filepath)
-            self.img1 = img2show.resize((250, 250), Image.LANCZOS)
-            self.img1 = ImageTk.PhotoImage(self.img1)
-            self.text_img1.image_create(END, image=self.img1)
-            self.button1["state"] = "enabled"
+        if file_path:
+            self.image = Image.open(file_path)
+            self.image.thumbnail((256, 256))
+            self.photo = ImageTk.PhotoImage(self.image)
+            self.text_img1.image_create("1.0", image=self.photo)
+            self.button1.config(state="normal")
+            self.file_path = file_path
 
     def run_model(self):
-        self.label, self.proba, self.heatmap = predict(self.array)
-        self.img2 = Image.fromarray(self.heatmap)
-        self.img2 = self.img2.resize((250, 250), Image.LANCZOS)
-        self.img2 = ImageTk.PhotoImage(self.img2)
-        self.text_img2.image_create(END, image=self.img2)
-        self.text2.insert(END, self.label)
-        self.text3.insert(END, "{:.2f}".format(self.proba) + "%")
+        image_array = np.array(self.image.resize((512, 512))) / 255.0
+        if image_array.ndim == 3 and image_array.shape[-1] == 3:  # Si es una imagen RGB
+            image_array = np.mean(image_array, axis=-1, keepdims=True)  # Convertir a escala de grises
+        image_array = np.expand_dims(image_array, axis=0)
+        prediction = self.model.predict(image_array)
+        probability = prediction[0][0]
 
-    def save_results_csv(self):
-        with open("historial.csv", "a") as csvfile:
-            w = csv.writer(csvfile, delimiter="-")
-            w.writerow(
-                [self.text1.get(), self.label, "{:.2f}".format(self.proba) + "%"]
-            )
-            showinfo(title="Guardar", message="Los datos se guardaron con éxito.")
-
-    def create_pdf(self):
-        cap = tkcap.CAP(self.root)
-        ID = "Reporte" + str(self.reportID) + ".jpg"
-        img = cap.capture(ID)
-        img = Image.open(ID)
-        img = img.convert("RGB")
-        pdf_path = r"Reporte" + str(self.reportID) + ".pdf"
-        img.save(pdf_path)
-        self.reportID += 1
-        showinfo(title="PDF", message="El PDF fue generado con éxito.")
+        result = "Neumonía" if probability > 0.5 else "Normal"
+        self.text2.delete("1.0", tk.END)
+        self.text2.insert(tk.END, result)
+        self.text3.delete("1.0", tk.END)
+        self.text3.insert(tk.END, f"{probability:.2f}")
 
     def delete(self):
-        answer = askokcancel(
-            title="Confirmación", message="Se borrarán todos los datos.", icon=WARNING
-        )
-        if answer:
-            self.text1.delete(0, "end")
-            self.text2.delete(1.0, "end")
-            self.text3.delete(1.0, "end")
-            self.text_img1.delete(self.img1, "end")
-            self.text_img2.delete(self.img2, "end")
-            showinfo(title="Borrar", message="Los datos se borraron con éxito")
+        self.text_img1.delete("1.0", tk.END)
+        self.text_img2.delete("1.0", tk.END)
+        self.text1.delete(0, tk.END)
+        self.text2.delete("1.0", tk.END)
+        self.text3.delete("1.0", tk.END)
+        self.button1.config(state="disabled")
+
+    def create_pdf(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf",
+                                                 filetypes=[("PDF files", "*.pdf")])
+        if file_path:
+            c = canvas.Canvas(file_path, pagesize=letter)
+            c.drawString(100, 750, "Reporte de Diagnóstico de Neumonía")
+            c.drawString(100, 730, f"Cédula Paciente: {self.ID.get()}")
+            c.drawString(100, 710, f"Resultado: {self.text2.get('1.0', 'end-1c')}")
+            c.drawString(100, 690, f"Probabilidad: {self.text3.get('1.0', 'end-1c')}")
+
+            # Save the current image as a temporary file
+            temp_image_path = "temp_image.png"
+            self.image.save(temp_image_path)
+
+            # Draw the image on the PDF
+            c.drawImage(temp_image_path, 100, 400, width=200, height=200)
+
+            c.showPage()
+            c.save()
+
+    def save_results_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv")])
+        if file_path:
+            with open(file_path, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Cédula Paciente', 'Resultado', 'Probabilidad'])
+                writer.writerow([self.ID.get(), self.text2.get('1.0', 'end-1c').strip(), self.text3.get('1.0', 'end-1c').strip()])
 
 if __name__ == "__main__":
-    app = App()
+    App()
