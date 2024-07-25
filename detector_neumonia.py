@@ -1,11 +1,14 @@
+# Modulo implementación de proyectos Miguel A. Saavedra Codigo 2238093
 # Propósito: Archivo principal que configura y ejecuta la aplicación de detección de neumonía.
-
 # Define la lógica de la interfaz gráfica usando tkinter.
 # Implementa funciones para leer archivos DICOM y JPG, preprocesar imágenes, cargar el modelo entrenado, hacer predicciones y generar mapas de calor.
 
 
 import tkinter as tk
 from tkinter import ttk, font, filedialog, Text, StringVar
+from tkinter import *
+from tkinter import ttk, font, filedialog
+from tkinter.messagebox import askokcancel, showinfo, WARNING
 from PIL import ImageTk, Image
 import numpy as np
 from reportlab.lib.pagesizes import letter
