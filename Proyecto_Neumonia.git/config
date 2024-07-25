@@ -5,6 +5,6 @@
 	ignorecase = true
 	precomposeunicode = true
 [remote "origin"]
-	url = https://github.com/mash4403/Proyecto_Neumonia.git
+	url = git@github.com:mash4403/Proyecto_Neumonia.git
 	fetch = +refs/*:refs/*
 	mirror = true
