@@ -11,3 +11,4 @@ pandas
 tensorflow
 python-xlib
 pytest
+flask

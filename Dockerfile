@@ -1,22 +1,20 @@
+# Usa una imagen base oficial de Python
+FROM python:3.9-slim
 
-#
-# Utilizar una imagen base de Python
-FROM python:3.12.0
-
-# Establecer el directorio de trabajo en el contenedor
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el archivo de requerimientos al contenedor
+# Copia los archivos de requisitos al directorio de trabajo
 COPY requirements.txt .
 
-# Instalar las dependencias
+# Instala las dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del contenido de la carpeta actual al contenedor
+# Copia el resto del código fuente de la aplicación
 COPY . .
 
-# Exponer el puerto que utiliza la aplicación
-EXPOSE 5000
+# Expone el puerto en el que la aplicación va a correr (por ejemplo, 8080)
+EXPOSE 8080
 
 # Comando para ejecutar la aplicación
-CMD ["python", "detector_neumonia.py"]
+CMD ["python", "app.py"]
