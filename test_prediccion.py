@@ -1,3 +1,4 @@
+# Prueba unitaria para verificar que el modelo pueda hacer una predicción
 import unittest
 import numpy as np
 from tensorflow.keras.models import load_model

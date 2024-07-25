@@ -1,3 +1,4 @@
+# Prueba unitaria para el modelo de clasificación de imágenes
 import unittest
 from tensorflow.keras.models import load_model
 
